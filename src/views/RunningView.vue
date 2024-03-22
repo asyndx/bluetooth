@@ -15,7 +15,7 @@ import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
 const route = useRoute()
-const file = ref("/src/assets/cxk1.gif")
+const file = ref(import.meta.env.APP_BASE + "assets/cxk1.gif")
 
 const time = ref(['00', '00', '00'])
 

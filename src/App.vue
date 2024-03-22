@@ -1,6 +1,6 @@
 <template>
   <router-view v-slot="{ Component }">
-    <transition name="fade-slide" mode="out-in" appear v-on:send="send">
+    <transition name="fade-slide" mode="out-in" appear @send="send">
       <component :is="Component" />
     </transition>
   </router-view>
@@ -56,7 +56,7 @@ import { ref, onUnmounted, computed } from 'vue'
 import { Setting } from '@element-plus/icons-vue'
 const showSetting = ref(false)
 
-const namePrefix = ref('One')
+const namePrefix = ref('BLE')
 const server = ref(null)
 const services = ref([])
 const characteristics = ref([])
