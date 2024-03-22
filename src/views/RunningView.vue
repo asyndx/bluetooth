@@ -19,8 +19,6 @@ const file = ref("/src/assets/cxk1.gif")
 
 const time = ref(['00', '00', '00'])
 
-const out = ref([])
-
 function toIndex() {
   router.push('/')
 }
@@ -40,11 +38,22 @@ for (let i = 0; i < source.length; ++i) {
 source.splice(6, 0, 15)
 source.splice(3, 0, 14)
 
+const timeInterval = new Array(source.length).fill(20)
+timeInterval[0] = 0
+timeInterval[4] = 1
+
 const emit = defineEmits(["send"])
 
 const p = ref(0)
 
-const postAction = function() {
+const postAction = function(after) {
+  if (!(after == 0 && timeInterval[p.value] == 0)) {
+    if (after != 0) {
+      timeInterval[p.value] -= after
+      postAction(0)
+    }
+    return
+  }
   if (p.value >= source.length) {
     return
   }
@@ -56,16 +65,12 @@ const postAction = function() {
   action[4] = (source[p.value] >> 8 ) & 0xff
   emit("send", action)
   p.value += 1
+  postAction(0)
 }
 // https://wit-motion.yuque.com/wumwnr/docs/gfrlph#Nix1r
 
 const calcNext = function(t) {
-  // if (time.value[2] == '19' || time.value[2] == '39' || time.value[2] == '59') {
-  //   out.value.push(time.value[2])
-  // }
-  if (time.value[2][time.value[2].length - 1] == '4' || time.value[2][time.value[2].length - 1] == '9') {
-    postAction()
-  }
+  postAction(1)
   t = t == undefined ? 2: t;
   if (t >= 0) {
     let next = String(time.value[t] - 0 + 1)
@@ -81,6 +86,8 @@ const calcNext = function(t) {
 }
 
 const remainSec = ref(300)
+
+postAction(0)
 
 const timer = setInterval(() => {
   calcNext();

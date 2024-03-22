@@ -19,6 +19,7 @@
         <el-button @click="connect">连接</el-button>
         <el-button @click="disconnect">断开</el-button>
         <el-button @click="send">发送</el-button>
+        <el-button @click="clear">清空</el-button>
       </div>
     </div>
     <div class="setting-item">
@@ -70,11 +71,15 @@ const connect = async function () {
       return
     }
     try {
+      await navigator.bluetooth.getAvailability()
       let device = null;
       if (namePrefix.value.length != 0) {
         device = await navigator.bluetooth.requestDevice({
           filters: [{ namePrefix: namePrefix.value }],
-          optionalServices: ['0000fff0-0000-1000-8000-00805f9b34fb']
+          optionalServices: [
+            '0000fff0-0000-1000-8000-00805f9b34fb', // ONE
+            '0000fee0-0000-1000-8000-00805f9b34fb', // BLE
+          ],
         })
       } else {
         device = await navigator.bluetooth.requestDevice({ acceptAllDevices: true })
@@ -86,7 +91,11 @@ const connect = async function () {
       server.value = await device.gatt.connect();
       services.value = await server.value.getPrimaryServices();
     } catch (err) {
-      console.log(typeof err, err)
+      if (err instanceof DOMException && err.message.includes('User cancelled')) {
+        ElMessage("取消连接")
+      } else {
+        console.log(typeof err, err)
+      }
     }
   }
 }
@@ -146,6 +155,10 @@ const send = function (bytes) {
     out.value.push(Array.from(bytes).map(byte => '0x' + byte.toString(16).padStart(2, '0')).join(' '))
     characteristic.value.writeValueWithoutResponse(bytes)
   }
+}
+
+const clear = function () {
+  out.value = []
 }
 
 </script>
