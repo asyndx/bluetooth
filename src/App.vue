@@ -23,6 +23,10 @@
       </div>
     </div>
     <div class="setting-item">
+      <span></span>
+      <el-input v-model="extServiceUUID" placeholder="额外服务UUID" style="width: 80%;" clearable></el-input>
+    </div>
+    <div class="setting-item">
       <span>服务：</span>
       <el-select v-model="uuidOfService" placeholder="" style="width: 80%;" @change="handleServiceChange">
         <el-option
@@ -58,6 +62,7 @@ const showSetting = ref(false)
 
 const namePrefix = ref('BLE')
 const server = ref(null)
+const extServiceUUID = ref('')
 const services = ref([])
 const characteristics = ref([])
 const characteristic = ref(null)
@@ -72,17 +77,24 @@ const connect = async function () {
     }
     try {
       await navigator.bluetooth.getAvailability()
-      let device = null;
+      let device = null
+      const optionalServices = ref([
+        '0000fff0-0000-1000-8000-00805f9b34fb', // ONE
+        '0000fee0-0000-1000-8000-00805f9b34fb', // BLE
+      ])
+      if (extServiceUUID.value.length != 0) {
+        optionalServices.push(extServiceUUID.value)
+      }
       if (namePrefix.value.length != 0) {
         device = await navigator.bluetooth.requestDevice({
           filters: [{ namePrefix: namePrefix.value }],
-          optionalServices: [
-            '0000fff0-0000-1000-8000-00805f9b34fb', // ONE
-            '0000fee0-0000-1000-8000-00805f9b34fb', // BLE
-          ],
+          optionalServices: optionalServices,
         })
       } else {
-        device = await navigator.bluetooth.requestDevice({ acceptAllDevices: true })
+        device = await navigator.bluetooth.requestDevice({
+          acceptAllDevices: true,
+          optionalServices: optionalServices,
+        })
       }
       ElMessage({
         message: "连接蓝牙设备" + device.name + "成功",

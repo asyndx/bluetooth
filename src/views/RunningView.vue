@@ -12,10 +12,11 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import cxk from '@/assets/cxk1.gif'
 
 const router = useRouter()
 const route = useRoute()
-const file = ref(import.meta.env.APP_BASE + "assets/cxk1.gif")
+const file = ref(cxk)
 
 const time = ref(['00', '00', '00'])
 
