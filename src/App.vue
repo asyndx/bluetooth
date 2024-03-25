@@ -83,17 +83,17 @@ const connect = async function () {
         '0000fee0-0000-1000-8000-00805f9b34fb', // BLE
       ])
       if (extServiceUUID.value.length != 0) {
-        optionalServices.push(extServiceUUID.value)
+        optionalServices.value.push(extServiceUUID.value)
       }
       if (namePrefix.value.length != 0) {
         device = await navigator.bluetooth.requestDevice({
           filters: [{ namePrefix: namePrefix.value }],
-          optionalServices: optionalServices,
+          optionalServices: optionalServices.value,
         })
       } else {
         device = await navigator.bluetooth.requestDevice({
           acceptAllDevices: true,
-          optionalServices: optionalServices,
+          optionalServices: optionalServices.value,
         })
       }
       ElMessage({
