@@ -4,18 +4,15 @@
     <div class="project-desc">
       <span>徊·流项目介绍</span>
     </div>
-    <button @click="toOperate" class="btn-start">全屏开始程序</button>
+    <button @click="toOperate" class="btn-start">开始程序</button>
   </div>
 </template>
 <script setup>
 import { useRouter } from 'vue-router'
-import { useFullscreen } from '@vueuse/core'
-const { enter } = useFullscreen()
 
 const router = useRouter()
 const toOperate = function () {
   router.push('/operate')
-  enter()
 }
 
 </script>
