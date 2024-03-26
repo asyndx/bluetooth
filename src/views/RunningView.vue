@@ -39,23 +39,31 @@ for (let i = 0; i < source.length; ++i) {
 source.splice(6, 0, 15)
 source.splice(3, 0, 14)
 
-const timeInterval = new Array(source.length).fill(20)
-timeInterval[0] = 0
-timeInterval[4] = 1
+const sourceStr = source.join(' ') + '\n'
 
-const emit = defineEmits(["send"])
+const props = defineProps(['timeInterval'])
+
+const timeInterval = new Array(source.length).fill(0)
+
+const initVals = props.timeInterval.split(' ').map(Number)
+for (let i = 0; i < timeInterval.length; ++i) {
+  timeInterval[i] = i < initVals.length ? initVals[i] : 0
+}
+
+const emit = defineEmits(["send", "monitor"])
 
 const p = ref(0)
 
 const postAction = function(after) {
+  if (p.value >= source.length) {
+    return
+  }
+  emit("monitor",  sourceStr + timeInterval.join(' '))
   if (!(after == 0 && timeInterval[p.value] == 0)) {
     if (after != 0) {
       timeInterval[p.value] -= after
       postAction(0)
     }
-    return
-  }
-  if (p.value >= source.length) {
     return
   }
   const action = new Uint8Array(5)
@@ -72,7 +80,7 @@ const postAction = function(after) {
 
 const calcNext = function(t) {
   postAction(1)
-  t = t == undefined ? 2: t;
+  t = t == undefined ? 2: t
   if (t >= 0) {
     let next = String(time.value[t] - 0 + 1)
     if (next.length == 1) {
@@ -91,7 +99,7 @@ const remainSec = ref(300)
 postAction(0)
 
 const timer = setInterval(() => {
-  calcNext();
+  calcNext()
   remainSec.value -= 1
   if (remainSec.value == 0) {
     toIndex()

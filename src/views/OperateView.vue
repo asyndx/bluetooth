@@ -25,6 +25,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useFullscreen } from '@vueuse/core'
 
 const NONE = '_'
 
@@ -70,12 +71,27 @@ function delCode() {
     }
   }
 }
+
+const props = defineProps(['characteristic'])
+
 const router = useRouter()
+const { toggle } = useFullscreen()
 function toRunning() {
   if (!isFull.value) {
-    alert("请输入全部数字！")
-    return;
+    ElMessage({
+      message: "请输入全部数字",
+      type: "warning",
+    })
+    return
   }
+  if (props.characteristic == null) {
+    ElMessage({
+      message: "未选择特征值",
+      type: "warning",
+    })
+    return
+  }
+  toggle()
   router.push('/running?code=' + Number.parseInt(codeGroups.value.map(group => group[0] + group[1]).join(''), 2).toString(16))
 }
 </script>

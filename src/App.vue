@@ -1,6 +1,6 @@
 <template>
   <router-view v-slot="{ Component }">
-    <transition name="fade-slide" mode="out-in" appear @send="send">
+    <transition name="fade-slide" mode="out-in" appear @send="send" :characteristic="characteristic" :timeInterval="timeInterval" @monitor="monitor">
       <component :is="Component" />
     </transition>
   </router-view>
@@ -50,14 +50,32 @@
     </div>
     <div class="setting-item">
       <span>发送数据：</span>
-      <el-input v-model="data" placeholder="输入发送数据" style="width: 80%;" clearable></el-input>
+      <el-input v-model="data" placeholder="输入发送数据（文本）" style="width: 80%;" clearable></el-input>
+    </div>
+    <div class="setting-item">
+      <span>使用固定间隔：</span>
+      <div>
+        <el-switch v-model="useFixedInterval" style="margin-right: 10px;" @change="handleUseFixed" />
+        <el-input-number v-model="fixedInterval" :min="0" @change="handleFixedIntervalChange" :disabled="!useFixedInterval" />
+      </div>
+    </div>
+    <div class="setting-item">
+      <span>当前发送间隔：</span>
+      <div>
+        <el-input v-model="timeInterval" placeholder="发送间隔" style="width: 200px;" :disabled="useFixedInterval" clearable></el-input>
+        <el-button style="margin-left: 10px;" @click="reset" :disabled="useFixedInterval">重置</el-button>
+      </div>
+    </div>
+    <div class="setting-item" style="height: 32px; white-space: pre-wrap;">
+      <span>{{ runInfo }}</span>
     </div>
     <div class="console"> {{ output }} </div>
   </el-drawer>
 </template>
 <script setup>
-import { ref, onUnmounted, computed } from 'vue'
+import { ref, onUnmounted, computed, onMounted } from 'vue'
 import { Setting } from '@element-plus/icons-vue'
+import router from './router'
 const showSetting = ref(false)
 
 const namePrefix = ref('BLE')
@@ -68,6 +86,9 @@ const characteristics = ref([])
 const characteristic = ref(null)
 const uuidOfService = ref('')
 const uuidOfCharacteristic = ref('')
+const timeInterval = ref('0 20 20 20 1 20 20 20')
+const useFixedInterval = ref(false)
+const fixedInterval = ref(5)
 
 const connect = async function () {
   if (!server.value) {
@@ -79,7 +100,8 @@ const connect = async function () {
       await navigator.bluetooth.getAvailability()
       let device = null
       const optionalServices = ref([
-        '0000fff0-0000-1000-8000-00805f9b34fb', // ONE
+        '0000ffe0-0000-1000-8000-00805f9b34fb',
+        '0000fff0-0000-1000-8000-00805f9b34fb', // APP
         '0000fee0-0000-1000-8000-00805f9b34fb', // BLE
       ])
       if (extServiceUUID.value.length != 0) {
@@ -120,6 +142,7 @@ const disconnect = function () {
       type: "success",
     })
     server.value = null
+    characteristics.value = null
     uuidOfService.value = ''
     uuidOfCharacteristic.value = ''
   } else {
@@ -166,11 +189,54 @@ const send = function (bytes) {
   if (server.value && characteristic.value) {
     out.value.push(Array.from(bytes).map(byte => '0x' + byte.toString(16).padStart(2, '0')).join(' '))
     characteristic.value.writeValueWithoutResponse(bytes)
+  } else if (server.value == null) {
+    ElMessage({
+      message: "未连接",
+      type: "warning",
+    })
+  } else {
+    ElMessage({
+      message: "未选择特征值",
+      type: "warning",
+    })
   }
 }
 
 const clear = function () {
   out.value = []
+}
+
+const reset = function () {
+  timeInterval.value = '0 20 20 20 1 20 20 20'
+}
+
+const timeIntervalBak = ref(timeInterval.value)
+
+const handleUseFixed = function (useFixed) {
+  if (useFixed) {
+    timeIntervalBak.value = timeInterval.value
+    timeInterval.value = new Array(8).fill(fixedInterval.value).join(' ')
+  } else {
+    timeInterval.value = timeIntervalBak.value
+  }
+}
+
+const handleFixedIntervalChange = function (value) {
+  if (useFixedInterval.value) {
+    timeInterval.value = new Array(8).fill(value).join(' ')
+  }
+}
+
+const runInfo = ref('')
+
+router.afterEach((to, from, failure) => {
+  if (to.path == '/') {
+    runInfo.value = ''
+  }
+})
+
+const monitor = function (newInfo) {
+  runInfo.value = newInfo
 }
 
 </script>
