@@ -25,7 +25,6 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useFullscreen } from '@vueuse/core'
 
 const NONE = '_'
 
@@ -75,7 +74,6 @@ function delCode() {
 const props = defineProps(['characteristic'])
 
 const router = useRouter()
-const { toggle } = useFullscreen()
 function toRunning() {
   if (!isFull.value) {
     ElMessage({
@@ -91,7 +89,6 @@ function toRunning() {
     })
     return
   }
-  toggle()
   router.push('/running?code=' + Number.parseInt(codeGroups.value.map(group => group[0] + group[1]).join(''), 2).toString(16))
 }
 </script>

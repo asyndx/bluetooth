@@ -151,7 +151,8 @@ const disconnect = function () {
       type: "success",
     })
     server.value = null
-    characteristics.value = null
+    services.value = []
+    characteristics.value = []
     uuidOfService.value = ''
     uuidOfCharacteristic.value = ''
   } else {
