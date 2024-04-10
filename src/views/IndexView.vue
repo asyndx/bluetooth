@@ -1,14 +1,21 @@
-
 <template>
-  <div class="container">
+  <div class="wrap-container">
     <div class="project-desc">
-      <span>徊·流项目介绍</span>
+      <span>{{ desc }}</span>
     </div>
-    <button @click="toOperate" class="btn-start">开始程序</button>
+    <div style="width: 1026px;">
+      <button @click="toOperate" class="btn btn-start">开始程序</button>
+    </div>
   </div>
 </template>
 <script setup>
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+
+const desc = ref('“啸叫”是扩音系统中经常出现的一种“不正常”现象，是声反馈过量的一种表现。近年来，人们关注的信息\
+领域会习惯性地被自己无意识间输入的“指令”所引导，原始信息通过算法推送机制引导后狭窄化、定式化，某种程度上人们被动\
+地将自己的生活桎梏于像蚕茧一般的“信息茧房”中。「徊 · 流」声音互动装置使用交互艺术的语言构建两者之间的联系，拟通过\
+啸叫发声，将信息茧房现象再现于方寸之间。')
 
 const router = useRouter()
 const toOperate = function () {
@@ -17,26 +24,34 @@ const toOperate = function () {
 
 </script>
 <style scoped>
-.container {
+.wrap-container {
   width: 100%;
-  height: 100vh;
+  height: 100%;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
 }
 .project-desc {
-  border: 2px solid black;
-  width: 70%;
-  height: 30%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  width: 1026px;
+  height: 336px;
+  border-radius: 23px;
+  margin-top: 192px;
+  padding: 46px 26px 35px 50px;
+  box-sizing: border-box;
+  background: #FFFFFF33;
+  line-height: 50.69px;
+  font-size: 24px;
+  font-weight: 400;
+  color: white;
+  text-align: center;
 }
 .btn-start {
-  position: fixed;
-  right: 100px;
-  bottom: 100px;
-  width: 100px;
-  height: 50px;
+  width: 256px;
+  height: 66px;
+  margin-top: 66px;
+  margin-left: 725px;
+  line-height: 66px;
+  font-size: 25px;
+  font-weight: 400;
 }
 </style>

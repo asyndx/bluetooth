@@ -1,4 +1,5 @@
 <template>
+  <BackGround />
   <router-view v-slot="{ Component }">
     <transition name="fade-slide" mode="out-in" appear @send="send" :characteristic="characteristic" :timeInterval="timeInterval" @monitor="monitor">
       <component :is="Component" />
@@ -79,6 +80,7 @@
   </el-drawer>
 </template>
 <script setup>
+import BackGround from '@/components/BackGround.vue'
 import { ref, onUnmounted, computed, onMounted } from 'vue'
 import { Setting } from '@element-plus/icons-vue'
 import router from './router'
@@ -257,10 +259,25 @@ const monitor = function (newInfo) {
 
 </script>
 <style>
+.btn {
+  border: 1px solid white;
+  border-radius: 16px;
+  background: #FFFFFF33;
+  color: white;
+}
+.btn:focus {
+  background: #FFFFFF66;
+}
+/* @font-face {
+  font-family: 'Noto Sans Arabic';
+  src: url('/fonts/NotoSansArabic-Regular.ttf');
+} */
 body {
-  width: 100%;
-  height: 100vh;
+  width: 1280px;
+  height: 800px;
   margin: 0;
+  box-sizing: border-box;
+  /* font-family: 'Noto Sans Arabic'; */
 }
 .bt-state {
   position: fixed;
