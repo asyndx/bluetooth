@@ -2,6 +2,7 @@
   <div class="container">
     <div class="runtime">{{ time[0] }}:{{ time[1] }}:{{ time[2] }}</div>
     <img :src="file" class="bg-gif" />
+    <!-- <div id="bg-anime" class="bg-anime"></div> -->
     <div class="tips">
       <div> {{ remainSec }}s后自动回到
         <a @click="toIndex" style="color: blue;">首页</a>
@@ -10,9 +11,24 @@
   </div>
 </template>
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
+// import lottie from 'lottie-web'
 import { useRouter, useRoute } from 'vue-router'
 import cxk from '@/assets/cxk1.gif'
+// import animeData from '@/assets/data.json'
+
+onMounted(() => {
+  // lottie.loadAnimation({
+  //   container: document.getElementById("bg-anime"),
+  //   renderer: 'svg',
+  //   // renderer: 'html',
+  //   // assetsPath: '/images/',
+  //   loop: true,
+  //   autoplay: true,
+  //   animationData: animeData,
+  //   // path: 'https://labs.nearpod.com/bodymovin/demo/markus/halloween/markus.json',
+  // })
+})
 
 const router = useRouter()
 const route = useRoute()
@@ -106,6 +122,13 @@ const timer = setInterval(() => {
   }
 }, 1000)
 
+console.log("create: ", timer)
+
+onUnmounted(() => {
+  console.log("clear: ", timer)
+  clearInterval(timer)
+})
+
 </script>
 <style scoped>
 .container {
@@ -130,6 +153,13 @@ const timer = setInterval(() => {
 .tips {
   position: fixed;
   bottom: 100px;
+}
+
+.bg-anime {
+  /* z-index: 9999; */
+  width: 1280px;
+  height: 800px;
+  background-color: bisque;
 }
 
 </style>

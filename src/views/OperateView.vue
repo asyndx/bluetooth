@@ -75,20 +75,20 @@ const props = defineProps(['characteristic'])
 
 const router = useRouter()
 function toRunning() {
-  if (!isFull.value) {
-    ElMessage({
-      message: "请输入全部数字",
-      type: "warning",
-    })
-    return
-  }
-  if (props.characteristic == null) {
-    ElMessage({
-      message: "未选择特征值",
-      type: "warning",
-    })
-    return
-  }
+  // if (!isFull.value) {
+  //   ElMessage({
+  //     message: "请输入全部数字",
+  //     type: "warning",
+  //   })
+  //   return
+  // }
+  // if (props.characteristic == null) {
+  //   ElMessage({
+  //     message: "未选择特征值",
+  //     type: "warning",
+  //   })
+  //   return
+  // }
   router.push('/running?code=' + Number.parseInt(codeGroups.value.map(group => group[0] + group[1]).join(''), 2).toString(16))
 }
 </script>

@@ -198,7 +198,13 @@ const send = function (bytes) {
   }
   if (server.value && characteristic.value) {
     out.value.push(Array.from(bytes).map(byte => '0x' + byte.toString(16).padStart(2, '0')).join(' '))
-    characteristic.value.writeValueWithoutResponse(bytes)
+    try {
+      characteristic.value.writeValueWithoutResponse(bytes)
+    } catch (e) {
+      console.log(typeof e)
+      console.log(e)
+      console.log(String(e))
+    }
   } else if (server.value == null) {
     ElMessage({
       message: "未连接",
