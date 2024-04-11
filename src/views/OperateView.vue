@@ -6,7 +6,7 @@
           <div v-for="code in group" :class="['code-item', code ? 'code-fill' : '']"> {{ code }} </div>
         </div>
       </div>
-      <button class="btn btn-del">删除</button>
+      <button class="btn btn-del" @click="delCode()" :disabled="isEmpty()">删除</button>
     </div>
     <div class="bottom-container">
       <div class="left-desc">
@@ -15,8 +15,8 @@
       </div>
       <div class="right-ops">
         <div style="display: flex;">
-          <button class="btn btn-input" @click="addCode('0')" :disabled="isFull">0</button>
-          <button class="btn btn-input" @click="addCode('1')" :disabled="isFull">1</button>
+          <button class="btn btn-input" @click="addCode('0')" :disabled="isFull()">0</button>
+          <button class="btn btn-input" @click="addCode('1')" :disabled="isFull()">1</button>
           <button @click="toRunning" class="btn btn-start">启动</button>
         </div>
       </div>
@@ -24,83 +24,25 @@
   </div>
 </template>
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
-
-const NONE = '_'
-
-const codeGroups = ref(new Array(4))
-codeGroups.value[0] = ['1', '0']
-codeGroups.value[1] = ['', '']
-codeGroups.value[2] = ['', '']
-codeGroups.value[3] = ['', '']
+import { useAppSettings } from '@/stores/app'
 
 const desc = ref('该系统输入指令由四组两位二进制数据组成，每组两位二进制数据有00,01,10,11\
 四种状态，输入全部二进制数据后点击启动，系统将根据数据产生不同的声音。')
 
+const appSettings = useAppSettings()
 
-// const init = function () {
-//   for (let i = 0; i < codeGroups.value.length; ++i) {
-//     codeGroups.value[i] = [NONE, NONE]
-//   }
-// }
-// init()
+const { initCodeGroups, isFull, isEmpty, addCode, delCode, blurAferClick } = appSettings;
+const { codeGroups } = storeToRefs(appSettings)
 
-const isFull = computed(() => {
-  return codeGroups.value[codeGroups.value.length - 1][1] != NONE
-})
-// const isEmpty = computed(() => {
-//   return codeGroups.value[0][0] == NONE
-// })
+initCodeGroups()
 
-// function addCode(val) {
-//   for (let i = 0; i < codeGroups.value.length; ++i) {
-//     let group = codeGroups.value[i];
-//     if (group[0] == NONE) {
-//       group[0] = val;
-//       break;
-//     }
-//     if (group[1] == NONE) {
-//       group[1] = val;
-//       break;
-//     }
-//   }
-// }
-
-// function delCode() {
-//   for (let i = codeGroups.value.length - 1; i >= 0; --i) {
-//     let group = codeGroups.value[i];
-//     if (group[1] != NONE) {
-//       group[1] = NONE;
-//       break;
-//     }
-//     if (group[0] != NONE) {
-//       group[0] = NONE;
-//       break;
-//     }
-//   }
-// }
-
-// const props = defineProps(['characteristic'])
-
-// const router = useRouter()
-// function toRunning() {
-//   // if (!isFull.value) {
-//   //   ElMessage({
-//   //     message: "请输入全部数字",
-//   //     type: "warning",
-//   //   })
-//   //   return
-//   // }
-//   // if (props.characteristic == null) {
-//   //   ElMessage({
-//   //     message: "未选择特征值",
-//   //     type: "warning",
-//   //   })
-//   //   return
-//   // }
-//   router.push('/running?code=' + Number.parseInt(codeGroups.value.map(group => group[0] + group[1]).join(''), 2).toString(16))
-// }
+const router = useRouter()
+const toRunning = function () {
+  router.push('/running')
+}
 </script>
 <style scoped>
 .wrap-container {

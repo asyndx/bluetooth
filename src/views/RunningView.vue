@@ -1,165 +1,111 @@
 <template>
-  <div class="container">
-    <div class="runtime">{{ time[0] }}:{{ time[1] }}:{{ time[2] }}</div>
-    <img :src="file" class="bg-gif" />
-    <!-- <div id="bg-anime" class="bg-anime"></div> -->
-    <div class="tips">
-      <div> {{ remainSec }}s后自动回到
-        <a @click="toIndex" style="color: blue;">首页</a>
-      </div>
-    </div>
-  </div>
+  <div class="wrap-container" />
 </template>
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-// import lottie from 'lottie-web'
-import { useRouter, useRoute } from 'vue-router'
-import cxk from '@/assets/cxk1.gif'
-// import animeData from '@/assets/data.json'
-
-onMounted(() => {
-  // lottie.loadAnimation({
-  //   container: document.getElementById("bg-anime"),
-  //   renderer: 'svg',
-  //   // renderer: 'html',
-  //   // assetsPath: '/images/',
-  //   loop: true,
-  //   autoplay: true,
-  //   animationData: animeData,
-  //   // path: 'https://labs.nearpod.com/bodymovin/demo/markus/halloween/markus.json',
-  // })
-})
+import { useAppSettings } from '@/stores/app'
+import { useRouter } from 'vue-router'
 
 const router = useRouter()
-const route = useRoute()
-const file = ref(cxk)
+const appSettings = useAppSettings()
 
-const time = ref(['00', '00', '00'])
-
-function toIndex() {
+const toIndex = function() {
   router.push('/')
 }
 
-const code = ref(route.query['code'])
-if (typeof code.value != 'string' || code.value.length > 3 || !/^[0-9A-Fa-f]+$/.test(code.value)) {
-  code.value = '0'
-}
+const timer = ref(null)
 
-const source = [...Number.parseInt(code.value, 16).toString(4)]
-while (source.length < 6) {
-  source.unshift('0')
-}
-for (let i = 0; i < source.length; ++i) {
-  source[i] = (i % 3) * 4 + parseInt(source[i]) + 1
-}
-source.splice(6, 0, 15)
-source.splice(3, 0, 14)
-
-const sourceStr = source.join(' ') + '\n'
-
-const props = defineProps(['timeInterval'])
-
-const timeInterval = new Array(source.length).fill(0)
-
-const initVals = props.timeInterval.split(' ').map(Number)
-for (let i = 0; i < timeInterval.length; ++i) {
-  timeInterval[i] = i < initVals.length ? initVals[i] : 0
-}
-
-const emit = defineEmits(["send", "monitor"])
-
-const p = ref(0)
-
-const postAction = function(after) {
-  if (p.value >= source.length) {
-    return
-  }
-  emit("monitor",  sourceStr + timeInterval.join(' '))
-  if (!(after == 0 && timeInterval[p.value] == 0)) {
-    if (after != 0) {
-      timeInterval[p.value] -= after
-      postAction(0)
-    }
-    return
-  }
-  const action = new Uint8Array(5)
-  action[0] = 0xFF
-  action[1] = 0x09
-  action[2] = 0x00
-  action[3] = source[p.value] & 0xff
-  action[4] = (source[p.value] >> 8 ) & 0xff
-  emit("send", action)
-  p.value += 1
-  postAction(0)
-}
-// https://wit-motion.yuque.com/wumwnr/docs/gfrlph#Nix1r
-
-const calcNext = function(t) {
-  postAction(1)
-  t = t == undefined ? 2: t
-  if (t >= 0) {
-    let next = String(time.value[t] - 0 + 1)
-    if (next.length == 1) {
-      time.value[t] = '0' + next
-    } else if (next == (t == 0 ? '24' : '60')) {
-      time.value[t] = '00'
-      calcNext(t - 1)
-    } else {
-      time.value[t] = next
-    }
-  }
-}
-
-const remainSec = ref(300)
-
-postAction(0)
-
-const timer = setInterval(() => {
-  calcNext()
-  remainSec.value -= 1
-  if (remainSec.value == 0) {
-    toIndex()
-  }
-}, 1000)
-
-console.log("create: ", timer)
-
-onUnmounted(() => {
-  console.log("clear: ", timer)
-  clearInterval(timer)
+onMounted(() => {
+  timer.value = setTimeout(toIndex, 300 * 1000)
+  appSettings.appStart()
 })
 
+onUnmounted(() => {
+  clearInterval(timer.value)
+})
+
+// const router = useRouter()
+// const route = useRoute()
+
+// const time = ref(['00', '00', '00'])
+
+// function toIndex() {
+//   router.push('/')
+// }
+
+// const code = ref(route.query['code'])
+// if (typeof code.value != 'string' || code.value.length > 3 || !/^[0-9A-Fa-f]+$/.test(code.value)) {
+//   code.value = '0'
+// }
+
+// const source = [...Number.parseInt(code.value, 16).toString(4)]
+// while (source.length < 6) {
+//   source.unshift('0')
+// }
+// for (let i = 0; i < source.length; ++i) {
+//   source[i] = (i % 3) * 4 + parseInt(source[i]) + 1
+// }
+// source.splice(6, 0, 15)
+// source.splice(3, 0, 14)
+
+// const sourceStr = source.join(' ') + '\n'
+
+// const props = defineProps(['timeInterval'])
+
+// const timeInterval = new Array(source.length).fill(0)
+
+// const initVals = props.timeInterval.split(' ').map(Number)
+// for (let i = 0; i < timeInterval.length; ++i) {
+//   timeInterval[i] = i < initVals.length ? initVals[i] : 0
+// }
+
+// const emit = defineEmits(["send", "monitor"])
+
+// const p = ref(0)
+
+// const postAction = function(after) {
+//   if (p.value >= source.length) {
+//     return
+//   }
+//   emit("monitor",  sourceStr + timeInterval.join(' '))
+//   if (!(after == 0 && timeInterval[p.value] == 0)) {
+//     if (after != 0) {
+//       timeInterval[p.value] -= after
+//       postAction(0)
+//     }
+//     return
+//   }
+//   const action = new Uint8Array(5)
+//   action[0] = 0xFF
+//   action[1] = 0x09
+//   action[2] = 0x00
+//   action[3] = source[p.value] & 0xff
+//   action[4] = (source[p.value] >> 8 ) & 0xff
+//   emit("send", action)
+//   p.value += 1
+//   postAction(0)
+// }
+// // https://wit-motion.yuque.com/wumwnr/docs/gfrlph#Nix1r
+
+// const calcNext = function(t) {
+//   postAction(1)
+//   t = t == undefined ? 2: t
+//   if (t >= 0) {
+//     let next = String(time.value[t] - 0 + 1)
+//     if (next.length == 1) {
+//       time.value[t] = '0' + next
+//     } else if (next == (t == 0 ? '24' : '60')) {
+//       time.value[t] = '00'
+//       calcNext(t - 1)
+//     } else {
+//       time.value[t] = next
+//     }
+//   }
+// }
 </script>
 <style scoped>
-.container {
+.wrap-container {
   width: 100%;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  height: 100%;
 }
-.runtime {
-  position: fixed;
-  top: 150px;
-  font-weight: bold;
-  font-size: 1.5em;
-}
-.bg-gif {
-  position: fixed;
-  width: 50%;
-  height: 50%;
-  opacity: 0.7;
-}
-.tips {
-  position: fixed;
-  bottom: 100px;
-}
-
-.bg-anime {
-  /* z-index: 9999; */
-  width: 1280px;
-  height: 800px;
-  background-color: bisque;
-}
-
 </style>
