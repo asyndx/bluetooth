@@ -15,7 +15,7 @@
       </div>
       <div class="right-ops">
         <div style="display: flex;">
-          <button class="btn btn-input" @click="addCode('0')" :disabled="isFull()">0</button>
+          <button class="btn btn-input" @click="addCode('0')" @touchstart="e => e.target.focus()" @touchend="e => e.target.blur()" :disabled="isFull()">0</button>
           <button class="btn btn-input" @click="addCode('1')" :disabled="isFull()">1</button>
           <button @click="toRunning" class="btn btn-start">启动</button>
         </div>
