@@ -48,7 +48,7 @@
     <div class="setting-item">
       <span>当前发送间隔：</span>
       <div>
-        <el-input v-model="customTimeInterval " placeholder="发送间隔" style="width: 200px;" clearable></el-input>
+        <el-input v-model="customTimeInterval" placeholder="发送间隔" style="width: 200px;" clearable></el-input>
         <el-button style="margin-left: 10px;" @click="resetTimeInterval()">重置</el-button>
       </div>
     </div>
@@ -64,7 +64,7 @@ const appSettings = useAppSettings()
 
 const { connect, disconnect, resetTimeInterval, send } = appSettings
 const { namePrefix, server, extServiceUUID, services, characteristics, characteristic, uuidOfService,
-  uuidOfCharacteristic, customTimeInterval, textData, sendLogs } = storeToRefs(appSettings)
+  uuidOfCharacteristic, customTimeInterval, textData } = storeToRefs(appSettings)
 
 const showSetting = ref(false)
 

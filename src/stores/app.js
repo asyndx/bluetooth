@@ -106,14 +106,14 @@ export const useAppSettings = defineStore('appSettings', () => {
       }
       try {
         let device = await navigator.bluetooth.requestDevice({
-          acceptAllDevices: true,
-          optionalServices: ['0000fff0-0000-1000-8000-00805f9b34fb'],
+          filters: [{ namePrefix: 'HC' }],
+          optionalServices: ['0000ffe0-0000-1000-8000-00805f9b34fb'],
         })
         console.log("connect to '" + device.name + "' success.")
         server.value = await device.gatt.connect()
-        service.value = await server.value.getPrimaryService('0000fff0-0000-1000-8000-00805f9b34fb')
+        service.value = await server.value.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb')
         console.log("service: " + service.value.uuid)
-        characteristic.value = await service.value.getCharacteristic('0000fff2-0000-1000-8000-00805f9b34fb')
+        characteristic.value = await service.value.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb')
         console.log("characteristic: " + characteristic.value.uuid)
       } catch (err) {
         if (err instanceof DOMException && err.message.includes('User cancelled')) {
@@ -177,7 +177,7 @@ export const useAppSettings = defineStore('appSettings', () => {
       action[4] = (target >> 8 ) & 0xff
       return [action, timeInterval[idx]]
     })
-    for (let ext of [[2, 14, 1], [5, 15, 20]]) {
+    for (let ext of [[2, 14, 20], [5, 15, 20]]) {
       const action = new Uint8Array(5)
       action[0] = 0xFF
       action[1] = 0x09
@@ -186,6 +186,7 @@ export const useAppSettings = defineStore('appSettings', () => {
       action[4] = (ext[1] >> 8 ) & 0xff
       msgWithTimeList.splice(ext[0], 0, [action, ext[2]])
     }
+    msgWithTimeList[3][1] = 3
     return msgWithTimeList
   }
 
