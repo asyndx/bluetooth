@@ -13,7 +13,6 @@
         <el-button @click="connect()" :disabled="server != null">连接</el-button>
         <el-button @click="disconnect()" :disabled="server == null">断开</el-button>
         <el-button @click="send()" :disabled="server == null">发送</el-button>
-        <el-button @click="clear()">清空</el-button>
       </div>
     </div>
     <div class="setting-item">
@@ -53,11 +52,10 @@
         <el-button style="margin-left: 10px;" @click="resetTimeInterval()">重置</el-button>
       </div>
     </div>
-    <div class="app-console"> {{ output }} </div>
   </el-drawer>
 </template>
 <script setup>
-import { ref, onUnmounted, computed } from 'vue'
+import { ref, onUnmounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { Setting } from '@element-plus/icons-vue'
 import { useAppSettings } from '@/stores/app'
@@ -88,14 +86,6 @@ const handleServiceChange = function (val) {
 
 const handleCharacteristicChange = function (val) {
   characteristic.value = characteristics.value.find(item => item.uuid == val)
-}
-
-const output = computed(() => {
-  return sendLogs.value.join('\n')
-})
-
-const clear = function () {
-  sendLogs.value = []
 }
 
 </script>

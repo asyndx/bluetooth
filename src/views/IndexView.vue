@@ -4,13 +4,21 @@
       <span>{{ desc }}</span>
     </div>
     <div style="width: 1026px;">
-      <button @click="toOperate" class="btn btn-start">开始程序</button>
+      <button @click="e => blurAfterClick(e, 'p1start') || toOperate()" class="btn btn-start">开始程序</button>
     </div>
   </div>
 </template>
 <script setup>
 import { ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
+import { useAppSettings } from '@/stores/app'
+import { useFullscreen } from '@vueuse/core'
+
+const appSettings = useAppSettings()
+
+const { blurAfterClick, autoConnect } = appSettings
+const { characteristic } = storeToRefs(appSettings)
 
 const desc = ref('“啸叫”是扩音系统中经常出现的一种“不正常”现象，是声反馈过量的一种表现。近年来，人们关注的信息\
 领域会习惯性地被自己无意识间输入的“指令”所引导，原始信息通过算法推送机制引导后狭窄化、定式化，某种程度上人们被动\
@@ -18,8 +26,19 @@ const desc = ref('“啸叫”是扩音系统中经常出现的一种“不正�
 啸叫发声，将信息茧房现象再现于方寸之间。')
 
 const router = useRouter()
+
+const { isFullscreen, isSupported, enter } = useFullscreen()
 const toOperate = function () {
-  router.push('/operate')
+  // if (isSupported.value && !isFullscreen.value) {
+  //   enter()
+  // }
+  if (!characteristic.value) {
+    autoConnect().then(() => {
+      router.push('/operate')
+    }).catch(err => {})
+  } else {
+    router.push('/operate')
+  }
 }
 
 </script>

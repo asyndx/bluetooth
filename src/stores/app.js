@@ -10,6 +10,7 @@ export const useAppSettings = defineStore('appSettings', () => {
     }
     codeIndex.value = 0
   }
+  initCodeGroups()
   const isFull = function () {
     return codeIndex.value == codeGroups.value.length * codeGroups.value[0].length
   }
@@ -30,20 +31,26 @@ export const useAppSettings = defineStore('appSettings', () => {
     codeIndex.value -= 1
     codeGroups.value[parseInt(codeIndex.value / 2)][codeIndex.value % 2] = ''
   }
-  const blurAferClick = function (e) {
-    setTimeout(() => e.target.blur(), 100)
+  const blurTimers = {}
+  const blurAfterClick = function (e, key) {
+    if (blurTimers.hasOwnProperty(key)) {
+      clearTimeout(blurTimers[key])
+    }
+    blurTimers[key] = setTimeout(() => {
+      if (e && e.target && e.target.blur) {
+        e.target.blur()
+      }
+      Reflect.deleteProperty(blurTimers, key)
+    }, 150)
   }
   const debug = ref(false)
-
-  const appStart = function () {
-    console.log("app start")
-  }
 
   const timeInterval = new Array(4).fill(0)
   const defalutTimeInterval = '0 20 20 20'
   const customTimeInterval = ref(defalutTimeInterval)
   const namePrefix = ref('One')
   const server = ref(null)
+  const service = ref(null)
   const services = ref([])
   const characteristic = ref(null)
   const characteristics = ref([])
@@ -51,14 +58,10 @@ export const useAppSettings = defineStore('appSettings', () => {
   const uuidOfService = ref('')
   const uuidOfCharacteristic = ref('')
   const textData = ref('')
-  const sendLogs = ref([])
   const connect = async function () {
     if (!server.value) {
       if (!navigator || !navigator.bluetooth) {
-        ElMessage({
-          message: "浏览器不支持Web Bluetooth API",
-          type: "error",
-        })
+        alert("浏览器不支持Web Bluetooth API")
         return
       }
       try {
@@ -82,15 +85,12 @@ export const useAppSettings = defineStore('appSettings', () => {
             optionalServices: optionalServices.value,
           })
         }
-        ElMessage({
-          message: "连接蓝牙设备" + device.name + "成功",
-          type: "success",
-        })
+        console.log("connect to '" + device.name + "' success.")
         server.value = await device.gatt.connect()
         services.value = await server.value.getPrimaryServices()
       } catch (err) {
         if (err instanceof DOMException && err.message.includes('User cancelled')) {
-          ElMessage("取消连接")
+          console.log("user cancelled!")
         } else {
           console.log(typeof err, err)
         }
@@ -98,13 +98,38 @@ export const useAppSettings = defineStore('appSettings', () => {
     }
   }
 
+  const autoConnect = async () => {
+    if (!server.value) {
+      if (!navigator || !navigator.bluetooth) {
+        alert("浏览器不支持Web Bluetooth API")
+        throw "Unsupport Web Bluetooth API"
+      }
+      try {
+        let device = await navigator.bluetooth.requestDevice({
+          acceptAllDevices: true,
+          optionalServices: ['0000fff0-0000-1000-8000-00805f9b34fb'],
+        })
+        console.log("connect to '" + device.name + "' success.")
+        server.value = await device.gatt.connect()
+        service.value = await server.value.getPrimaryService('0000fff0-0000-1000-8000-00805f9b34fb')
+        console.log("service: " + service.value.uuid)
+        characteristic.value = await service.value.getCharacteristic('0000fff2-0000-1000-8000-00805f9b34fb')
+        console.log("characteristic: " + characteristic.value.uuid)
+      } catch (err) {
+        if (err instanceof DOMException && err.message.includes('User cancelled')) {
+          console.log("user cancelled!")
+        } else {
+          console.log(typeof err, err)
+        }
+        throw "Unknown error"
+      }
+    }
+  }
+
   const disconnect = function () {
     if (server.value) {
       server.value.disconnect()
-      ElMessage({
-        message: "断开蓝牙设备" + server.value.device.name + "成功",
-        type: "success",
-      })
+      console.log("disconnect '" + server.value.device.name + "' success.")
       server.value = null
       services.value = []
       characteristics.value = []
@@ -118,25 +143,18 @@ export const useAppSettings = defineStore('appSettings', () => {
       const encoder = new TextEncoder()
       bytes = encoder.encode(textData.value)
     }
+    console.log("start send '" + Array.from(bytes).map(byte => '0x' + byte.toString(16).padStart(2, '0')).join(' ') + "'")
     if (server.value && characteristic.value) {
-      sendLogs.value.push(Array.from(bytes).map(byte => '0x' + byte.toString(16).padStart(2, '0')).join(' '))
       try {
         characteristic.value.writeValueWithoutResponse(bytes)
+        console.log("send success!")
       } catch (e) {
-        console.log(typeof e)
-        console.log(e)
-        console.log(String(e))
+        console.log("error!", e)
       }
     } else if (server.value == null) {
-      ElMessage({
-        message: "未连接",
-        type: "warning",
-      })
+      console.log("error: server is null!")
     } else {
-      ElMessage({
-        message: "未选择特征值",
-        type: "warning",
-      })
+      console.log("error: characteristic is null!")
     }
   }
 
@@ -144,10 +162,57 @@ export const useAppSettings = defineStore('appSettings', () => {
     customTimeInterval.value = defalutTimeInterval
   }
 
+  const queue = ref(null)
+  const worker = ref(null)
+
+  const initQueue = function () {
+    const msgWithTimeList = codeGroups.value.map((val, idx) => {
+      const action = new Uint8Array(5)
+      action[0] = 0xFF
+      action[1] = 0x09
+      action[2] = 0x00
+      const code = val[0] + val[1]
+      const target = (idx % 2) * 4 + parseInt(code.length != 2 ? '0' : code, 2) + 1
+      action[3] = target & 0xff
+      action[4] = (target >> 8 ) & 0xff
+      return [action, timeInterval[idx]]
+    })
+    for (let ext of [[2, 14, 1], [5, 15, 20]]) {
+      const action = new Uint8Array(5)
+      action[0] = 0xFF
+      action[1] = 0x09
+      action[2] = 0x00
+      action[3] = ext[1] & 0xff
+      action[4] = (ext[1] >> 8 ) & 0xff
+      msgWithTimeList.splice(ext[0], 0, [action, ext[2]])
+    }
+    return msgWithTimeList
+  }
+
+  const createTask = function (msgWithtime) {
+    return setTimeout(msg => {
+      send(msg)
+      if (queue.value.length) {
+        worker.value = createTask(queue.value.shift())
+      } else {
+        worker.value = null
+      }
+    }, msgWithtime[1] * 1000, msgWithtime[0])
+  }
+
+  const appStart = function () {
+    const initVals = customTimeInterval.value.split(' ').map(Number)
+    for (let i = 0; i < timeInterval.length; ++i) {
+      timeInterval[i] = i < initVals.length ? initVals[i] : 0
+    }
+    queue.value = initQueue()
+    worker.value = createTask(queue.value.shift())
+  }
+
   return { codeGroups, initCodeGroups, isFull, isEmpty, addCode, delCode,
-    blurAferClick, debug, appStart, connect, disconnect, namePrefix,
+    blurAfterClick, debug, appStart, connect, disconnect, namePrefix,
     resetTimeInterval, server, services, characteristic, characteristics,
     extServiceUUID, uuidOfService, uuidOfCharacteristic, customTimeInterval,
-    textData, send, sendLogs,
+    textData, send, worker, codeIndex, autoConnect,
   }
 })
