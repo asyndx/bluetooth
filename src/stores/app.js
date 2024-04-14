@@ -87,7 +87,9 @@ export const useAppSettings = defineStore('appSettings', () => {
         }
         console.log("connect to '" + device.name + "' success.")
         server.value = await device.gatt.connect()
+        console.log("get services...")
         services.value = await server.value.getPrimaryServices()
+        console.log("get services success.")
       } catch (err) {
         if (err instanceof DOMException && err.message.includes('User cancelled')) {
           console.log("user cancelled!")
@@ -106,15 +108,22 @@ export const useAppSettings = defineStore('appSettings', () => {
       }
       try {
         let device = await navigator.bluetooth.requestDevice({
-          filters: [{ namePrefix: 'HC' }],
-          optionalServices: ['0000ffe0-0000-1000-8000-00805f9b34fb'],
+          filters: [{ namePrefix: debug.value ? namePrefix.value : 'HC' }],
+          optionalServices: [debug.value ? '0000fff0-0000-1000-8000-00805f9b34fb' : '0000ffe0-0000-1000-8000-00805f9b34fb'],
         })
         console.log("connect to '" + device.name + "' success.")
         server.value = await device.gatt.connect()
-        service.value = await server.value.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb')
+        service.value = await server.value.getPrimaryService(debug.value ? '0000fff0-0000-1000-8000-00805f9b34fb' : '0000ffe0-0000-1000-8000-00805f9b34fb')
         console.log("service: " + service.value.uuid)
-        characteristic.value = await service.value.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb')
+        characteristic.value = await service.value.getCharacteristic(debug.value ? '0000fff2-0000-1000-8000-00805f9b34fb' : '0000ffe1-0000-1000-8000-00805f9b34fb')
         console.log("characteristic: " + characteristic.value.uuid)
+        const action = new Uint8Array(5)
+        action[0] = 0xFF
+        action[1] = 0x09
+        action[2] = 0x00
+        action[3] = 0x00
+        action[4] = 0x00
+        send(action)
       } catch (err) {
         if (err instanceof DOMException && err.message.includes('User cancelled')) {
           console.log("user cancelled!")
@@ -129,7 +138,7 @@ export const useAppSettings = defineStore('appSettings', () => {
   const disconnect = function () {
     if (server.value) {
       server.value.disconnect()
-      console.log("disconnect '" + server.value.device.name + "' success.")
+      console.log("'" + server.value.device.name + "' disconnect.")
       server.value = null
       services.value = []
       characteristics.value = []
@@ -139,14 +148,16 @@ export const useAppSettings = defineStore('appSettings', () => {
   }
 
   const send = function (bytes) {
-    if (bytes == undefined && textData.length) {
+    if (bytes == undefined && textData.value.length) {
       const encoder = new TextEncoder()
       bytes = encoder.encode(textData.value)
     }
     console.log("start send '" + Array.from(bytes).map(byte => '0x' + byte.toString(16).padStart(2, '0')).join(' ') + "'")
     if (server.value && characteristic.value) {
       try {
-        characteristic.value.writeValueWithoutResponse(bytes)
+        characteristic.value.writeValueWithoutResponse(bytes).catch(err => {
+          console.log("error2!", err)
+        })
         console.log("send success!")
       } catch (e) {
         console.log("error!", e)

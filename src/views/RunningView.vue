@@ -20,7 +20,7 @@ const timer = ref(null)
 
 onMounted(() => {
   console.log("app start")
-  timer.value = setTimeout(toIndex, 5 * 60 * 1000)
+  timer.value = setTimeout(toIndex, 100 * 1000)
   appSettings.appStart()
 })
 
