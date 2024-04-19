@@ -61,4 +61,8 @@ body {
 	opacity: 0%;
 	transform: translateX(30px);
 }
+
+.el-message {
+  opacity: 0.9;
+}
 </style>

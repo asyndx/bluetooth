@@ -20,7 +20,7 @@
         <div style="display: flex;">
           <button class="btn btn-input" @click="e => blurAfterClick(e, 'addCode0') || addCode('0')" :disabled="isFull()">0</button>
           <button class="btn btn-input" @click="e => blurAfterClick(e, 'addCode1') || addCode('1')" :disabled="isFull()">1</button>
-          <button class="btn btn-start" @click="e => blurAfterClick(e, 'p2start') || toRunning()" :disabled="!isFull()">启动</button>
+          <button class="btn btn-start" @click="e => blurAfterClick(e, 'p2start') || toRunning()">启动</button>
         </div>
       </div>
     </div>
@@ -40,7 +40,14 @@ initCodeGroups()
 
 const router = useRouter()
 const toRunning = function () {
-  router.push('/running')
+  if (isFull()) {
+    router.push('/running')
+  } else {
+    ElMessage({
+      message: "请先输入全部数字！",
+      type: "warning",
+    })
+  }
 }
 </script>
 <style scoped>

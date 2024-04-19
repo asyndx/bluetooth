@@ -1,11 +1,24 @@
 <template>
   <div class="wrap-container">
+    <div class="btn-group">
+      <div class="btn-circle" @click="fullScreen()" @touchstart="handleTouchstart()" @touchend="handleTouchend()" >
+        <svg width="41" height="41" viewBox="0 0 41 41" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="20.5" cy="20.5" r="20" stroke="white" stroke-width="1" :fill="isPressed ? 'white' : ''" :fill-opacity="isPressed ? '0.55' : '0'" />
+          <path d="M9 17V13C9 12.4477 9.44772 12 10 12H13" stroke="white" stroke-width="2" stroke-linecap="round" />
+          <path d="M27 12L31 12C31.5523 12 32 12.4477 32 13L32 17" stroke="white" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </div>
+      <div class="btn-circle" @click="autoConnect()">
+        <svg width="41" height="41" viewBox="0 0 41 41" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M11 30.072L28.1137 14.9511C28.5774 14.5414 28.5615 13.8133 28.0805 13.4242L21.7674 8.3176C21.1135 7.78868 20.1385 8.25407 20.1385 9.09509V32.9049C20.1385 33.7459 21.1135 34.2113 21.7674 33.6824L28.0388 28.6095C28.5336 28.2092 28.5336 27.4548 28.0388 27.0545L11 13.272" stroke="white" stroke-width="2" stroke-linecap="round" />
+          <circle cx="20.5" cy="20.5" r="20" :fill="characteristic ? 'white' : ''" :fill-opacity="characteristic ? '0.55' : '0'" stroke="white" stroke-width="1" />
+        </svg>
+      </div>
+    </div>
     <div class="project-desc">
       <span>{{ desc }}</span>
     </div>
-    <div style="width: 1026px;">
-      <button @click="e => blurAfterClick(e, 'p1start') || toOperate()" class="btn btn-start">开始程序</button>
-    </div>
+    <button @click="e => blurAfterClick(e, 'p1start') || toOperate()" class="btn btn-start">开始程序</button>
   </div>
 </template>
 <script setup>
@@ -17,7 +30,7 @@ import { useFullscreen } from '@vueuse/core'
 
 const appSettings = useAppSettings()
 
-const { blurAfterClick, autoConnect } = appSettings
+const { blurAfterClick, autoConnect, send } = appSettings
 const { characteristic } = storeToRefs(appSettings)
 
 const desc = ref('“啸叫”是扩音系统中经常出现的一种“不正常”现象，是声反馈过量的一种表现。近年来，人们关注的信息\
@@ -27,18 +40,66 @@ const desc = ref('“啸叫”是扩音系统中经常出现的一种“不正�
 
 const router = useRouter()
 
-const { isFullscreen, isSupported, enter } = useFullscreen()
+const { isFullscreen, isSupported, enter, exit } = useFullscreen()
 const toOperate = function () {
-  // if (isSupported.value && !isFullscreen.value) {
-  //   enter()
-  // }
-  if (!characteristic.value) {
-    autoConnect().then(() => {
-      router.push('/operate')
-    }).catch(err => {})
-  } else {
+  if (characteristic.value) {
     router.push('/operate')
+  } else {
+    ElMessage({
+      message: "请先连接蓝牙！",
+      type: "warning",
+    })
   }
+}
+
+const count = ref(0)
+
+const fullScreen = function () {
+  if (!isFullscreen.value && isSupported.value) {
+    enter()
+  } else {
+    count.value += 1
+    console.log("current click count: ", count.value)
+    if (count.value % 5 == 0) {
+      if (characteristic.value) {
+        const action = new Uint8Array(5)
+        action[0] = 0xFF
+        action[1] = 0x09
+        action[2] = 0x00
+        action[3] = 0x00
+        action[4] = 0x00
+        send(action)
+      } else {
+        ElMessage({
+          message: "发送动作组 0 前请先连接蓝牙！",
+          type: "warning",
+        })
+      }
+    }
+  }
+}
+
+const startTime = ref(new Date().getTime())
+
+const isPressed = ref(false)
+const timer = ref(null)
+
+const handleTouchstart = function () {
+  startTime.value = new Date().getTime()
+  isPressed.value = true
+}
+
+const handleTouchend = function () {
+  if (new Date().getTime() - startTime.value > 3 * 1000 && isFullscreen.value) {
+    exit()
+  }
+  if (timer.value) {
+    clearTimeout(timer)
+  }
+  timer.value = setTimeout(() => {
+    isPressed.value = false
+    timer.value = null
+  }, 150)
 }
 
 </script>
@@ -68,9 +129,18 @@ const toOperate = function () {
   width: 256px;
   height: 66px;
   margin-top: 66px;
-  margin-left: 725px;
   line-height: 66px;
   font-size: 25px;
   font-weight: 400;
+}
+.btn-group {
+  position: absolute;
+  right: 42px;
+  top: 42px;
+  display: flex;
+  justify-content: flex-end;
+}
+.btn-circle {
+  margin-right: 23px;
 }
 </style>

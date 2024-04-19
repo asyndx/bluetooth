@@ -2,7 +2,7 @@
   <div class="btn-setting" @click="showSetting = true">
     <el-icon><Setting /></el-icon>
   </div>
-  <el-drawer title="蓝牙设置" v-model="showSetting" size="35%">
+  <el-drawer title="蓝牙设置" v-model="showSetting" direction="ltr" size="35%">
     <div class="setting-item">
       <span>蓝牙名称前缀：</span>
       <el-input v-model="namePrefix" placeholder="蓝牙名称前缀" style="width: 60%;" clearable></el-input>
@@ -93,7 +93,7 @@ const handleCharacteristicChange = function (val) {
 .btn-setting {
   position: fixed;
   top: 10px;
-  right: 10px;
+  left: 10px;
   height: 48px;
   width: 48px;
   display: flex;

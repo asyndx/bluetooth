@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
+import { useRouter } from 'vue-router'
 
 export const useAppSettings = defineStore('appSettings', () => {
   const codeGroups = ref(new Array(4))
@@ -117,20 +118,12 @@ export const useAppSettings = defineStore('appSettings', () => {
         console.log("service: " + service.value.uuid)
         characteristic.value = await service.value.getCharacteristic(debug.value ? '0000fff2-0000-1000-8000-00805f9b34fb' : '0000ffe1-0000-1000-8000-00805f9b34fb')
         console.log("characteristic: " + characteristic.value.uuid)
-        const action = new Uint8Array(5)
-        action[0] = 0xFF
-        action[1] = 0x09
-        action[2] = 0x00
-        action[3] = 0x00
-        action[4] = 0x00
-        send(action)
       } catch (err) {
         if (err instanceof DOMException && err.message.includes('User cancelled')) {
           console.log("user cancelled!")
         } else {
           console.log(typeof err, err)
         }
-        throw "Unknown error"
       }
     }
   }
@@ -142,10 +135,13 @@ export const useAppSettings = defineStore('appSettings', () => {
       server.value = null
       services.value = []
       characteristics.value = []
+      characteristic.value = null
       uuidOfService.value = ''
       uuidOfCharacteristic.value = ''
     }
   }
+
+  const router = useRouter()
 
   const send = function (bytes) {
     if (bytes == undefined && textData.value.length) {
@@ -154,14 +150,19 @@ export const useAppSettings = defineStore('appSettings', () => {
     }
     console.log("start send '" + Array.from(bytes).map(byte => '0x' + byte.toString(16).padStart(2, '0')).join(' ') + "'")
     if (server.value && characteristic.value) {
-      try {
-        characteristic.value.writeValueWithoutResponse(bytes).catch(err => {
-          console.log("error2!", err)
-        })
+      characteristic.value.writeValueWithoutResponse(bytes)
+      .then(() => {
         console.log("send success!")
-      } catch (e) {
-        console.log("error!", e)
-      }
+      })
+      .catch(err => {
+        console.log("send error", err)
+        ElMessage({
+          message: "蓝牙发送异常！请重新操作！",
+          type: "error",
+        })
+        disconnect()
+        router.push('/')
+      })
     } else if (server.value == null) {
       console.log("error: server is null!")
     } else {
