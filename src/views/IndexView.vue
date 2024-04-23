@@ -4,8 +4,10 @@
       <div class="btn-circle" @click="fullScreen()" @touchstart="handleTouchstart()" @touchend="handleTouchend()" >
         <svg width="41" height="41" viewBox="0 0 41 41" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="20.5" cy="20.5" r="20" stroke="white" stroke-width="1" :fill="isPressed ? 'white' : ''" :fill-opacity="isPressed ? '0.55' : '0'" />
-          <path d="M9 17V13C9 12.4477 9.44772 12 10 12H13" stroke="white" stroke-width="2" stroke-linecap="round" />
-          <path d="M27 12L31 12C31.5523 12 32 12.4477 32 13L32 17" stroke="white" stroke-width="2" stroke-linecap="round" />
+          <path d="M26 12L30 12C30.5523 12 31 12.4477 31 13L31 17" stroke="white" stroke-width="2" stroke-linecap="round" />
+          <path d="M10 17V13C10 12.4477 10.4477 12 11 12H15" stroke="white" stroke-width="2" stroke-linecap="round" />
+          <path d="M15 31L11 31C10.4477 31 10 30.5523 10 30L10 26" stroke="white" stroke-width="2" stroke-linecap="round" />
+          <path d="M31 26L31 30C31 30.5523 30.5523 31 30 31L26 31" stroke="white" stroke-width="2" stroke-linecap="round" />
         </svg>
       </div>
       <div class="btn-circle" @click="autoConnect()">

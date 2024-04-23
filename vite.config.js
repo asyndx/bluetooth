@@ -5,6 +5,8 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import vue from '@vitejs/plugin-vue'
+import postcsspxtoviewport8plugin from 'postcss-px-to-viewport-8-plugin'
+import autoprefixer from 'autoprefixer'
 
 // https://vitejs.dev/config/
 export default ({ mode }) => {
@@ -30,6 +32,23 @@ export default ({ mode }) => {
     server: {
       host: '0.0.0.0',
       port: 80,
+    },
+    css: {
+      postcss: {
+        plugins: [
+          postcsspxtoviewport8plugin({
+            unitToConvert: 'px',
+            viewportUnit: 'vw',
+            viewportWidth: 1280,
+            propList: ['*'],
+          }),
+          autoprefixer({
+            overrideBrowserslist: [
+              "last 10 versions",  // 所有主流浏览器最近10个版本
+            ]
+          })
+        ]
+      }
     }
   })
 }
