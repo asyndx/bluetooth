@@ -1,29 +1,5 @@
-# bluetooth
+# 蓝牙前端操控程序
 
-This template should help get you started developing with Vue 3 in Vite.
+web 蓝牙的简单尝试
 
-## Recommended IDE Setup
-
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vitejs.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
+UI: https://www.figma.com/file/9n7KhHxxkR4okeAUN0LA8z/Untitled?type=design&node-id=1-8&mode=design&t=BtkVo7ElEYfkbKCM-0

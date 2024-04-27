@@ -18,7 +18,8 @@
       </div>
     </div>
     <div class="project-desc">
-      <span>{{ desc }}</span>
+      <div>{{ desc1 }}</div>
+      <div>{{ desc2 }}</div>
     </div>
     <button @click="e => blurAfterClick(e, 'p1start') || toOperate()" class="btn btn-start">开始程序</button>
   </div>
@@ -35,9 +36,10 @@ const appSettings = useAppSettings()
 const { blurAfterClick, autoConnect, send } = appSettings
 const { characteristic } = storeToRefs(appSettings)
 
-const desc = ref('“啸叫”是扩音系统中经常出现的一种“不正常”现象，是声反馈过量的一种表现。近年来，人们关注的信息\
+const desc1 = ref('“啸叫”是扩音系统中经常出现的一种“不正常”现象，是声反馈过量的一种表现。近年来，人们关注的信息\
 领域会习惯性地被自己无意识间输入的“指令”所引导，原始信息通过算法推送机制引导后狭窄化、定式化，某种程度上人们被动\
-地将自己的生活桎梏于像蚕茧一般的“信息茧房”中。「徊 · 流」声音互动装置使用交互艺术的语言构建两者之间的联系，拟通过\
+地将自己的生活桎梏于像蚕茧一般的“信息茧房”中。')
+const desc2 = ref('「徊 · 流」声音互动装置使用交互艺术的语言构建两者之间的联系，拟通过\
 啸叫发声，将信息茧房现象再现于方寸之间。')
 
 const router = useRouter()
@@ -115,17 +117,18 @@ const handleTouchend = function () {
 }
 .project-desc {
   width: 1026px;
-  height: 336px;
+  height: 376px;
   border-radius: 23px;
-  margin-top: 192px;
-  padding: 46px 26px 35px 50px;
+  margin-top: 172px;
+  padding: 40px 48px 48px 48px;
   box-sizing: border-box;
   background: #FFFFFF33;
-  line-height: 50.69px;
+  line-height: 48px;
   font-size: 24px;
   font-weight: 400;
   color: white;
-  text-align: center;
+  text-align: justify;
+  text-indent: 2em;
 }
 .btn-start {
   width: 256px;
